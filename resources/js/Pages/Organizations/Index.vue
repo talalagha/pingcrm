@@ -1,6 +1,5 @@
 <template>
   <div>
-    <flash-messages />
     <h1 class="mb-8 font-bold text-3xl">Organizations</h1>
     <div class="mb-6 flex justify-between items-center">
       <search-filter v-model="form.search" class="w-full max-w-md mr-4" @reset="reset">
@@ -11,10 +10,10 @@
           <option value="only">Only Trashed</option>
         </select>
       </search-filter>
-      <inertia-link class="btn-indigo" :href="route('organizations.create')">
+      <a class="btn-indigo" href="javaScript:void(0)" @click.prevent="createOrganizationDialog = true">
         <span>Create</span>
         <span class="hidden md:inline">Organization</span>
-      </inertia-link>
+      </a>
     </div>
     <div class="bg-white rounded-md shadow overflow-x-auto">
       <table class="w-full whitespace-nowrap">
@@ -25,25 +24,25 @@
         </tr>
         <tr v-for="organization in organizations.data" :key="organization.id" class="hover:bg-gray-100 focus-within:bg-gray-100">
           <td class="border-t">
-            <inertia-link class="px-6 py-4 flex items-center focus:text-indigo-500" :href="route('organizations.edit', organization.id)">
+            <span class="px-6 py-4 flex items-center focus:text-indigo-500">
               {{ organization.name }}
               <icon v-if="organization.deleted_at" name="trash" class="flex-shrink-0 w-3 h-3 fill-gray-400 ml-2" />
-            </inertia-link>
+            </span>
           </td>
           <td class="border-t">
-            <inertia-link class="px-6 py-4 flex items-center" :href="route('organizations.edit', organization.id)" tabindex="-1">
+            <span class="px-6 py-4 flex items-center" tabindex="-1">
               {{ organization.city }}
-            </inertia-link>
+            </span>
           </td>
           <td class="border-t">
-            <inertia-link class="px-6 py-4 flex items-center" :href="route('organizations.edit', organization.id)" tabindex="-1">
+            <span class="px-6 py-4 flex items-center" tabindex="-1">
               {{ organization.phone }}
-            </inertia-link>
+            </span>
           </td>
           <td class="border-t w-px">
-            <inertia-link class="px-4 flex items-center" :href="route('organizations.edit', organization.id)" tabindex="-1">
+            <a class="px-4 flex items-center" href="javaScript:void(0)" @click.prevent="edit(organization)" tabindex="-1">
               <icon name="cheveron-right" class="block w-6 h-6 fill-gray-400" />
-            </inertia-link>
+            </a>
           </td>
         </tr>
         <tr v-if="organizations.data.length === 0">
@@ -52,6 +51,18 @@
       </table>
     </div>
     <pagination class="mt-6" :links="organizations.links" />
+    <Dialog v-model="createOrganizationDialog" persistent>
+      <Create
+        @onClose="createOrganizationDialog = false"
+      />
+    </Dialog>
+
+    <Dialog v-model="editOrganizationDialog" persistent>
+      <Edit
+        :organization="organization"
+        @onClose="editOrganizationDialog = false"
+      />
+    </Dialog>
   </div>
 </template>
 
@@ -64,14 +75,18 @@ import mapValues from 'lodash/mapValues'
 import Pagination from '@/Shared/Pagination'
 import SearchFilter from '@/Shared/SearchFilter'
 
-import FlashMessages from '@/Shared/FlashMessages'
+import Dialog from './Dialog'
+import Create from './Create'
+import Edit from './Edit'
 export default {
   metaInfo: { title: 'Organizations' },
   components: {
     Icon,
     Pagination,
     SearchFilter,
-    FlashMessages,
+    Dialog,
+    Create,
+    Edit,
   },
   layout: Layout,
   props: {
@@ -81,6 +96,8 @@ export default {
   data() {
     return {
       createOrganizationDialog: false,
+      editOrganizationDialog: false,
+      organization: {},
       form: {
         search: this.filters.search,
         trashed: this.filters.trashed,
@@ -98,6 +115,11 @@ export default {
   methods: {
     reset() {
       this.form = mapValues(this.form, () => null)
+    },
+    edit(organization) {
+      console.log(organization.name, '====');
+      this.organization = organization
+      this.editOrganizationDialog =  true
     },
   },
 }
